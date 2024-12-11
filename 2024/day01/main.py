@@ -1,5 +1,5 @@
 
-with open('./input_aoc_2024_01.txt', 'r') as file:
+with open('./input.txt', 'r') as file:
     data = [ [int(x) for x in l.split('   ')] for l in file.read().splitlines()]
 
 # Complexity: n.log(n)
