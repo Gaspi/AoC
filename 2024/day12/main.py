@@ -5,24 +5,30 @@ with open('./input.txt', 'r') as file:
 height = len(data)
 width = len(data[0])
 
-parent = { (i,j): (i,j) for i in range(height) for j in range(width) }
+def above(p):
+    return (p[0]-1,p[1])
+def below(p):
+    return (p[0]+1,p[1])
+def left(p):
+    return (p[0],p[1]-1)
+def right(p):
+    return (p[0],p[1]+1)
 
-def is_root(a):
-    return parent[a] == a
+
+parent = { (i,j): (i,j) for i in range(height) for j in range(width) }
 
 def get_root(a):
     b = parent[a]
     if b == a:
         return a
     else:
-        # Path compression
-        parent[a] = parent[b]
+        parent[a] = parent[b] # Path compression
         return get_root(parent[a])
 
 def link(a, b):
     ra = get_root(a)
     rb = get_root(b)
-    if a != b:
+    if ra != rb:
         parent[ra] = rb
 
 for i in range(height):
@@ -43,54 +49,32 @@ regions = regions_map.values()
 
 print(f"Found {len(regions)} regions")
 
+def border_above(region, p):
+    return p in region and above(p) not in region
+def border_below(region, p):
+    return p in region and below(p) not in region
+def border_left(region, p):
+    return p in region and left(p) not in region
+def border_right(region, p):
+    return p in region and right(p) not in region
+def nb_borders(region, p):
+    return border_above(region, p) + border_below(region, p) + border_left(region, p) + border_right(region, p)
 
 def eval_region(region):
-    surface = len(region)
-    borders = 0
-    for (i,j) in region:
-        if i == 0 or (i-1,j) not in region:
-            borders += 1
-        if i == height or (i+1,j) not in region:
-            borders += 1
-        if j == 0 or (i,j-1) not in region:
-            borders += 1
-        if j == width or (i,j+1) not in region:
-            borders += 1
-    return borders * surface
+    return len(region) * sum(nb_borders(region, p) for p in region)
 
 print(sum(eval_region(r) for r in regions))
 
 
-def above(p):
-    return (p[0]-1,p[1])
-def below(p):
-    return (p[0]+1,p[1])
-def left(p):
-    return (p[0],p[1]-1)
-def right(p):
-    return (p[0],p[1]+1)
-
+def nb_bulk_borders(region, p):
+    return sum((
+        border_above(region, p) and not border_above(region, right(p)),
+        border_below(region, p) and not border_below(region, right(p)),
+        border_left( region, p) and not border_left( region, below(p)),
+        border_right(region, p) and not border_right(region, below(p)),
+    ))
 
 def eval_region_bis(region):
-    surface = len(region)
-    borders = 0
-    def border_a(p):
-        return p in region and above(p) not in region
-    def border_b(p):
-        return p in region and below(p) not in region
-    def border_l(p):
-        return p in region and left(p) not in region
-    def border_r(p):
-        return p in region and right(p) not in region
-    for p in region:
-        if border_a(p) and not border_a(right(p)):
-            borders += 1
-        if border_b(p) and not border_b(right(p)):
-            borders += 1
-        if border_l(p) and not border_l(below(p)):
-            borders += 1
-        if border_r(p) and not border_r(below(p)):
-            borders += 1
-    return borders * surface
+    return len(region) * sum(nb_bulk_borders(region, p) for p in region)
 
 print(sum(eval_region_bis(r) for r in regions))
