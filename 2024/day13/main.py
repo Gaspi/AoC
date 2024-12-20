@@ -46,7 +46,7 @@ def nb_tokens_bis( Ax, Ay, Bx, By, Px, Py):
     Py += 10000000000000
     c = By*Ax - Bx*Ay
     if c == 0:
-        print("Mmmh... This is going to require some more work...")
+        print("This requires some more work since many solutions exists. Hopefully never happens...")
         print(Ax, Ay, Bx, By, Px, Py)
     else:
         d = Py*Ax - Px*Ay

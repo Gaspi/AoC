@@ -2,7 +2,6 @@
 with open('./input.txt', 'r') as file:
     data = [ [int(d) for d in line] for line in file.read().splitlines() ]
 
-
 height = len(data)
 width = len(data[0])
 
@@ -36,4 +35,3 @@ def rating(p):
     return res
 
 print( sum(rating(p) for p in pos if alt[p] == 0))
-
