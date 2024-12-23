@@ -30,23 +30,22 @@ pos = {
 
 forbidden_position = (3,0)
 
-def shortest_move_seq_pos(p, q):
+def shortest_pos_transition_seq(p, q):
     if p == q:
         return ['A']
     res = []
     if p[0] < q[0] and below(p) != forbidden_position:
-        res += [ 'v'+c for c in shortest_move_seq_pos(below(p), q) ]
+        res += [ 'v'+c for c in shortest_pos_transition_seq(below(p), q) ]
     if p[0] > q[0] and above(p) != forbidden_position:
-        res += [ '^'+c for c in shortest_move_seq_pos(above(p), q) ]
+        res += [ '^'+c for c in shortest_pos_transition_seq(above(p), q) ]
     if p[1] < q[1]:
-        res += [ '>'+c for c in shortest_move_seq_pos(right(p), q) ]
+        res += [ '>'+c for c in shortest_pos_transition_seq(right(p), q) ]
     if p[1] > q[1] and left(p) != forbidden_position:
-        res += [ '<'+c for c in shortest_move_seq_pos(left(p), q) ]
+        res += [ '<'+c for c in shortest_pos_transition_seq(left(p), q) ]
     return res
 
-def shortest_move_seq(start, end):
-    return shortest_move_seq_pos(pos[start], pos[end])
-
+def shortest_transition_seq(start, end):
+    return shortest_pos_transition_seq(pos[start], pos[end])
 
 memo = {}
 def nb_moves_to_transition(start, end, steps):
@@ -54,12 +53,10 @@ def nb_moves_to_transition(start, end, steps):
         return 1
     else:
         if (start, end, steps) not in memo:
-            memo[(start, end, steps)] = min(
-                [
-                    nb_moves_to_sequence(seq, steps-1)
-                    for seq in shortest_move_seq(start, end)
-                ]
-            )
+            memo[(start, end, steps)] = min([
+                nb_moves_to_sequence(seq, steps-1)
+                for seq in shortest_transition_seq(start, end)
+            ])
         return memo[(start, end, steps)]
 
 def nb_moves_to_sequence(seq, steps):
@@ -71,5 +68,5 @@ def nb_moves_to_sequence(seq, steps):
 print(nb_moves_to_sequence('029A', 1))
 print(nb_moves_to_sequence('029A', 2))
 print(nb_moves_to_sequence('029A', 3))
-print(sum( nb_moves_to_sequence(d,  3)*int(d[:-1]) for d in data))
-print(sum( nb_moves_to_sequence(d, 26)*int(d[:-1]) for d in data))
+print(sum(nb_moves_to_sequence(d,  3)*int(d[:-1]) for d in data))
+print(sum(nb_moves_to_sequence(d, 26)*int(d[:-1]) for d in data))
