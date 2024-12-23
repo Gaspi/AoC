@@ -1,9 +1,5 @@
-import re
-
 with open('./input.txt', 'r') as file:
     data = [ (int(l.split(',')[0]), int(l.split(',')[1])) for l in file.read().splitlines() ]
-
-print(data)
 
 size = 71
 def grid(bytefall):
@@ -16,8 +12,7 @@ def pp(g):
     for i in range(size):
         print(''.join(['.' if g[i][j] else '#' for j in range(size)]))
 
-g = grid(1024)
-pp(g)
+pp(grid(1024))
 
 def solve(grid):
     shortest = [ [ None for _ in range(size)] for _ in range(size) ]
@@ -36,7 +31,7 @@ def solve(grid):
         check(i,j+1,s+1)
     return shortest[size-1][size-1]
 
-print(solve(g))
+print(solve(grid(1024)))
 
 i = 1025
 j = len(data)
