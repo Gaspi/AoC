@@ -64,7 +64,7 @@ while len(search_pos) > 0:
     i,j,d,s,steps = search_pos.pop()
     nsteps = steps + [(i,j)]
     #print(i,j,d,s, len(search_pos))
-    
+
     if (i,j) == (iE,jE):
         if s <= min_score:
             if s < min_score:
