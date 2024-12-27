@@ -22,11 +22,11 @@ def binary_z(z):
     return res
 
 def eval(gates, input_wires):
-    values = { k:v for k,v in input_wires.items() }
+    values = { k: input_wires[k] for k in input_wires }
     def _eval(k):
         if k not in values:
             i1, o, i2 = gates[k]
-            values[k] = None
+            values[k] = None # To avoid loop-recomputing it
             v1 = _eval(i1)
             v2 = _eval(i2)
             if v1 is None or v2 is None:
@@ -41,28 +41,20 @@ def random_in_out():
     x = random.randrange(0, 2**45)
     y = random.randrange(0, 2**45)
     z = x + y
-    res_in = {}
-    res_out = {}
-    for i in range(45):
-        res_in[f"x{i:02}"] = x%2
-        res_in[f"y{i:02}"] = y%2
-        res_out[f"z{i:02}"] = z%2
-        x >>= 1
-        y >>= 1
-        z >>= 1
-    res_out[f"z45"] = z%2
-    return (res_in, res_out)
+    vx = { f"x{i:02}" : (x >> i) % 2 for i in range(45) }
+    vy = { f"y{i:02}" : (y >> i) % 2 for i in range(45) }
+    vz = { f"z{i:02}" : (z >> i) % 2 for i in range(46) }
+    return ( dict(**vx, **vy), vz)
 
 def difference(actual_out, expected_out):
-    return sum(actual_out[k]!=expected_out[k] for k in actual_out)
+    return sum(actual_out[k] != expected_out[k] for k in actual_out)
 
 def flip(gates, x, y):
     return { y if k == x else x if k == y else k: v for k,v in gates.items() }
 
 def score(gates, res_in, res_out):
-    eval_out = eval(flipped_gates, res_in)
+    eval_out = eval(gates, res_in)
     return 9999 if None in eval_out.values() else difference(eval_out ,res_out)
-
 
 scores = []
 rand_eval = [ random_in_out() for _ in range(10) ]
