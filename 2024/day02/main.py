@@ -12,3 +12,4 @@ def safe_x(seq):
     return any( safe(seq[:i]+seq[i+1:]) for i in range(len(seq)))
 
 print(sum(safe_x(u) for u in data))
+

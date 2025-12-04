@@ -1,11 +1,10 @@
 
-
 def id_f(x):
     return x
 
 class Grid:
     def __init__(self, data):
-        self.grid = [line.copy() for line in data]
+        self.grid = [ [ e for e in line ] for line in data]
         self.height = len(self.grid)
         self.width  = len(self.grid[0])
     
