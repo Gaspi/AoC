@@ -1,13 +1,15 @@
 import json
 from datetime import datetime, timedelta
+from pathlib import Path
+
 
 start_date = datetime(year=2025, month=12, day=1, hour=6, minute=0)
 
-with open('./leaderboard.json') as f:
+with open(Path(__file__).resolve().parent / 'leaderboard.json') as f:
     data = json.load(f)
 
 members = [ m for m in data['members'].values() if m['local_score'] > 0 ]
-members.sort(key=lambda m: m['local_score'], reverse=True)
+members.sort(key=lambda m: m['local_score'])
 
 timestamps = {}
 for m in members:

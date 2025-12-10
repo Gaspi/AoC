@@ -4,7 +4,7 @@ with open('./input.txt', 'r') as file:
     ingredients = [ int(i) for i in s2.split() ]
 
 # Quadratic but works in practice
-print(sum( any(a <= i <= b for a,b in fresh) for i in ingredients))
+print(sum( any(a <= i <= b for a,b in fresh) for i in ingredients ))
 
 fresh_intervals = []
 for a, b in sorted(fresh):
@@ -12,5 +12,4 @@ for a, b in sorted(fresh):
         fresh_intervals[-1][1] = max(b, fresh_intervals[-1][1])
     else:
         fresh_intervals.append( [a, b] )
-
 print( sum(b-a+1 for a,b in fresh_intervals) )
