@@ -1,50 +1,50 @@
-#import re
-#from functools import reduce
-
 data = []
 
-with open('./input_small.txt', 'r') as file:
+with open('./input.txt', 'r') as file:
     for l in file.read().splitlines():
         target = None
         buttons = []
-        req = []
+        button_masks = []
+        jolt = None
+        jolt_mask = None
         for e in l.split(' '):
             if e[0] == "[":
                 target = tuple(i == "#" for i in e[1:-1])
             elif e[0] == '(':
-                buttons.append( tuple( int(c) for c in e[1:-1].split(',')) )
+                button = tuple(int(c) for c in e[1:-1].split(','))
+                bmask = tuple(bool(i in button) for i in range(len(target)))
+                buttons.append(button)
+                button_masks.append(bmask)
             elif e[0] == '{':
-                req.append( tuple( int(c) for c in e[1:-1].split(',')) )
-        data.append( (target, buttons, req) )
+                jolt = tuple( int(c) for c in e[1:-1].split(',') )
+        data.append( (target, buttons, jolt, button_masks) )
 
-print(data)
 
-def pp(s):
-    return ''.join('#' if c else "." for c in s)
+def push(s, b):
+    return tuple(c ^ (i in b) for i, c in enumerate(s))
 
 def solve(target, buttons) -> int:
-    print("Start", pp(target), buttons )
     memo = set()
     mini = 99999999
-    stack = [ ( tuple(not c for c in target) , 0) ]
+    stack = [ ( tuple(not c for c in target) , 0, 0) ]
     while stack:
-        state,n = stack.pop()
-        print("->", pp(state), n )
-        if n >= mini or state in memo:
+        state, n, i = stack.pop()
+        if n >= mini:
             continue
-        memo.add(state)
         if all(state):
             mini = n
         else:
-            for b in buttons:
-                stack.append( (tuple(c ^ (i in b) for i,c in enumerate(state)), n+1) )
-                print( pp(tuple(c ^ (i in b) for i,c in enumerate(state))), n+1, b )
-    print(mini)
+            if i < len(buttons):
+                b = buttons[i]
+                stack.append( (push(state, b), n+1, i+1) )
+                stack.append( (         state, n  , i+1) )
     return mini
 
+print(sum(solve(target, buttons) for (target, buttons, jolt, jolt_mask) in data))
 
 
 
-print(sum(solve(target, buttons) for (target, buttons, req) in data))
+
+
 
 print("Done.")
