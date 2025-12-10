@@ -44,7 +44,53 @@ print(sum(solve(target, buttons) for (target, buttons, jolt, jolt_mask) in data)
 
 
 
+def get_actions(buttons):
+    N = max(i for button in buttons for i in button)+1
+    button_set = set(buttons)
+    checked = [False for i in range(N)]
+    for i in sorted(range(N), key=lambda i:sum( int(i in b) for b in buttons) ):
+        candidates = [b for b in button_set if i in b]
+        for button in candidates:
+            button_set.remove(button)
+            to_check = []
+            to_set = []
+            for k in button:
+                if not checked[k]:
+                    a = [b for b in button_set if k in b]
+                    if len(a) == 0:
+                        to_check.append(k)
+                        checked[k] = True
+                    if len(a) == 1:
+                        to_set.append( (k, a[0]) )
+            yield (button, to_set, to_check)
 
 
+
+def press(jolt, button, k):
+    return tuple(j - k * int(i in button) for i,j in enumerate(jolt))
+
+def press_all(jolt, button):
+    N = len(jolt)
+    maxi = min(jolt[i] for i in button)
+    for k in range(maxi+1):
+        yield (k, tuple( jolt[i] - k * int(i in button) for i in range(N)))
+
+res = 0
+for i,(target, buttons, jolt, buttons_mask) in enumerate(data):
+    print("##", i, "/", len(data))
+    candidates = [ (0, jolt) ]
+    for button, index_to_check in get_actions(buttons):
+        print(len(candidates))
+        candidates = [
+            (cnt+k, njolt)
+            for (cnt, jolt) in candidates
+            for (k, njolt) in press_all(jolt, button)
+            if all(njolt[i] == 0 for i in index_to_check)
+            ]
+    m = min(c for c, j in candidates)
+    # print(m)
+    res += m
+
+print(res)
 
 print("Done.")
