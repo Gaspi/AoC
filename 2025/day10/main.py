@@ -4,20 +4,15 @@ with open('./input.txt', 'r') as file:
     for l in file.read().splitlines():
         target = None
         buttons = []
-        button_masks = []
         jolt = None
-        jolt_mask = None
         for e in l.split(' '):
             if e[0] == "[":
                 target = tuple(i == "#" for i in e[1:-1])
             elif e[0] == '(':
-                button = tuple(int(c) for c in e[1:-1].split(','))
-                bmask = tuple(bool(i in button) for i in range(len(target)))
-                buttons.append(button)
-                button_masks.append(bmask)
+                buttons.append( tuple(int(c) for c in e[1:-1].split(',')) )
             elif e[0] == '{':
                 jolt = tuple( int(c) for c in e[1:-1].split(',') )
-        data.append( (target, buttons, jolt, button_masks) )
+        data.append( (target, buttons, jolt) )
 
 
 def push(s, b):
@@ -40,7 +35,7 @@ def solve(target, buttons) -> int:
                 stack.append( (         state, n  , i+1) )
     return mini
 
-print(sum(solve(target, buttons) for (target, buttons, jolt, jolt_mask) in data))
+print(sum(solve(target, buttons) for (target, buttons, jolt) in data))
 
 
 
@@ -52,7 +47,6 @@ def get_actions(buttons):
         candidates = [b for b in button_set if i in b]
         for button in candidates:
             button_set.remove(button)
-            to_check = []
             to_set = []
             for k in button:
                 if not checked[k]:
@@ -66,31 +60,58 @@ def get_actions(buttons):
 
 
 
-def press(jolt, button, k):
-    return tuple(j - k * int(i in button) for i,j in enumerate(jolt))
-
 def press_all(jolt, button):
     N = len(jolt)
     maxi = min(jolt[i] for i in button)
     for k in range(maxi+1):
         yield (k, tuple( jolt[i] - k * int(i in button) for i in range(N)))
 
-res = 0
-for i,(target, buttons, jolt, buttons_mask) in enumerate(data):
-    print("##", i, "/", len(data))
-    candidates = [ (0, jolt) ]
-    for button, index_to_check in get_actions(buttons):
-        print(len(candidates))
-        candidates = [
-            (cnt+k, njolt)
-            for (cnt, jolt) in candidates
-            for (k, njolt) in press_all(jolt, button)
-            if all(njolt[i] == 0 for i in index_to_check)
-            ]
-    m = min(c for c, j in candidates)
-    # print(m)
-    res += m
 
+def press(jolt, button, k):
+    return tuple(j - k * int(i in button) for i,j in enumerate(jolt))
+
+def get_single_buttons(N, buttons):
+    for i in range(N):
+        s = [b for b in buttons if i in b]
+        if len(s) == 1:
+            return (i, s[0])
+    return (None, None)
+
+def solve_jolt(init_jolt, buttons):
+    N = len(init_jolt)
+    buttons = set(buttons)
+
+    candidates = [ (0, init_jolt) ]
+    while True:
+        for i in range(N):
+            if all(i not in b for b in buttons):
+                candidates = [ c for c in candidates if c[1][i] == 0 ]
+        i, b = get_single_buttons(N, buttons)
+        if i is not None:
+            candidates = [ (score+jolt[i], press(jolt, b, jolt[i])) for score, jolt in candidates ]
+            candidates = [ c for c in candidates if all(e >= 0 for e in c[1]) ]
+            buttons.remove(b)
+            continue
+        if len(buttons) == 0:
+            return min(c[0] for c in candidates)
+        b = sorted(buttons, key=lambda x: ( sum( sum(int(i in b) for b in buttons)==2 for i in x), len(x)), reverse=True)[0]
+        candidates = [
+            (score+k, press(jolt, b, k))
+            for score, jolt in candidates
+            for k in range(1+min(jolt[i] for i in b))
+        ]
+        buttons.remove(b)
+
+for i, (target, buttons, jolt) in enumerate(data):
+    print(i, "->", len(buttons), "/",len(jolt))
+
+res = 0
+for i, (target, buttons, jolt) in enumerate(data):
+    print("##", i, "/", len(data))
+    d = solve_jolt(jolt, buttons)
+    print(d)
+    res += d
 print(res)
+
 
 print("Done.")
